@@ -40,15 +40,12 @@ const ConfirmationScreen = () => {
     if (shouldRedirect) history.push(config.routes.OPERATOR.HOME);
   }, [ssv.newOperatorKeys.pubKey, ssv.newOperatorKeys.name]);
 
-  const onRegisterClick = async () => {
-    await wallet.connect();
-    ssv.addNewOperator().then(() => {
-      history.push(config.routes.OPERATOR.SUCCESS_PAGE);
-    }).catch((error) => {
-      history.push(config.routes.OPERATOR.SUCCESS_PAGE);
-      console.log(error);
-    });
-  };
+    const onRegisterClick = async () => {
+        await wallet.connect();
+         ssv.addNewOperator().then(() => {
+             history.push(config.routes.OPERATOR.SUCCESS_PAGE);
+         });
+    };
 
   const keyDisplayName = (key: string) => {
     return `${key.substr(0, 10)}...${key.substr(key.length - 10, 10)}`;

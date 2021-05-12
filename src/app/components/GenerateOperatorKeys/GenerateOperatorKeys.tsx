@@ -7,7 +7,7 @@ import { useHistory } from 'react-router-dom';
 import { useStores } from '~app/hooks/useStores';
 import Header from '~app/common/components/Header';
 import Typography from '@material-ui/core/Typography';
-import Backdrop from '~app/common/components/Backdrop';
+// import Backdrop from '~app/common/components/Backdrop';
 import TextInput from '~app/common/components/TextInput';
 import { randomValueHex } from '~lib/utils/crypto';
 import config, { translations } from '~app/common/config';
@@ -26,7 +26,7 @@ const GenerateOperatorKeys = () => {
   const registerButtonStyle = { width: '100%', marginTop: 30 };
   let initialOperatorKey = '';
   if (config.FEATURE.TESTING.GENERATE_RANDOM_OPERATOR_KEY) {
-     initialOperatorKey = `0x${randomValueHex(64)}`;
+     initialOperatorKey = `0x${randomValueHex(128)}`;
   }
   const [inputsData, setInputsData] = useState({ publicKey: initialOperatorKey, name: '' });
   const [displayNameError, setDisplayNameError] = useState({ shouldDisplay: false, errorMessage: '' });
@@ -62,10 +62,11 @@ const GenerateOperatorKeys = () => {
           setOperatorExist(isExist);
       } else {
         ssv.addNewOperator(true).then(() => {
-          ssv.setIsLoading(false);
           history.push(config.routes.OPERATOR.CONFIRMATION_PAGE);
         });
       }
+    }).catch(() => {
+      ssv.setIsLoading(false);
     });
   };
 
@@ -89,7 +90,7 @@ const GenerateOperatorKeys = () => {
           </InputLabel>
 
           <br />
-          <InputLabel title="Operator Key" withHint toolTipText={'this should be an hyperlinked'}>
+          <InputLabel title="Operator Key" withHint toolTipText={translations.OPERATOR.HOME.TOOLTIP}>
             <TextInput type="text"
               data-testid="new-operator-key"
               className={publicKeyError.shouldDisplay ? classes.inputError : ''}
@@ -113,7 +114,7 @@ const GenerateOperatorKeys = () => {
           >
             Next
           </Button>
-          {ssv.addingNewOperator && <Backdrop />}
+          {/* {ssv.addingNewOperator && <Backdrop />} */}
         </Grid>
       </Grid>
     </Paper>
