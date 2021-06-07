@@ -24,7 +24,6 @@ const CreateValidator = () => {
 
       <Grid container wrap="nowrap" spacing={0} className={classes.gridContainer}>
         <Grid item xs zeroMinWidth className={classes.gridContainer}>
-
           {translations.VALIDATOR.CREATE.BODY_TEXT.map((text: string) => {
             return (
               <Typography className={classes.bodyText} key={text} variant="subtitle1" style={{ fontSize: 15 }}>

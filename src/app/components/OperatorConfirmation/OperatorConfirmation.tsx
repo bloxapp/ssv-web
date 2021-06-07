@@ -18,7 +18,7 @@ const OperatorConfirmation = () => {
   const operatorStore: ContractOperator = stores.ContractOperator;
   const applicationStore: ApplicationStore = stores.Application;
   const { redirectUrl, history } = useUserFlow();
-  const [actionButtonText, setActionButtonText] = useState('Register Operator');
+  const [actionButtonText, setActionButtonText] = useState(translations.OPERATOR.CONFIRMATION.REGISTER_OPERATOR);
   const [txHash, setTxHash] = useState('Register Operator');
 
   useEffect(() => {
@@ -26,23 +26,24 @@ const OperatorConfirmation = () => {
   }, [redirectUrl]);
 
   const onRegisterClick = async () => {
-      setActionButtonText('Waiting for confirmation...');
+    setActionButtonText(translations.OPERATOR.CONFIRMATION.WAITING_FOR_TRANSACTION);
       operatorStore.addNewOperator(false, handlePendingTransaction).then(() => {
         applicationStore.showTransactionPandingPopUp(false);
         history.push(config.routes.OPERATOR.SUCCESS_PAGE);
       }).catch(() => {
         applicationStore.showTransactionPandingPopUp(false);
-        setActionButtonText('Register Operator');
+        setActionButtonText(translations.OPERATOR.CONFIRMATION.REGISTER_OPERATOR);
       });
   };
 
   const handlePendingTransaction = (transactionHash: string) => {
     setActionButtonText('Sending transaction…');
     setTxHash(transactionHash);
+    setActionButtonText(translations.OPERATOR.CONFIRMATION.WAITING_FOR_CONFIRMATION);
     applicationStore.showTransactionPandingPopUp(true);
   };
 
-  const backNavigation = <BackNavigation to={config.routes.OPERATOR.GENERATE_KEYS} text="Register Operator" />;
+  const backNavigation = <BackNavigation to={config.routes.OPERATOR.GENERATE_KEYS} text={translations.OPERATOR.CONFIRMATION.REGISTER_OPERATOR} />;
   const header = <Header title={translations.OPERATOR.CONFIRMATION.TITLE} subtitle={translations.OPERATOR.CONFIRMATION.DESCRIPTION} />;
   const sections: IDataSection[] = [
     {

@@ -20,11 +20,15 @@ const translations = {
       FILE_ERRORS: {
         INVALID_FILE: 'Invalid file type.',
         INVALID_PASSWORD: 'Invalid keystore file password.',
+        INVALID_FILE_FORMAT: 'Invalid file format - only .json files are supported.',
       },
     },
     CONFIRMATION: {
       TITLE: 'Confirm Transaction',
       DESCRIPTION: '',
+      RUN_VALIDATOR: 'Run validator',
+      WAITING_FOR_CONFIRMATION: 'Waiting for confirmation...',
+      WAITING_FOR_TRANSACTION: 'WAITING_FOR_TRANSACTION',
     },
     SLASHING_WARNING: {
       TITLE: 'Slashing Warning',
@@ -67,6 +71,9 @@ const translations = {
     CONFIRMATION: {
       TITLE: 'Confirmation Transaction',
       DESCRIPTION: '',
+      REGISTER_OPERATOR: 'Register Operator',
+      WAITING_FOR_CONFIRMATION: 'Waiting for confirmation...',
+      WAITING_FOR_TRANSACTION: 'WAITING_FOR_TRANSACTION',
     },
 
     HOME: {

@@ -21,7 +21,7 @@ const ImportValidatorConfirmation = () => {
   const contractValidator: ContractValidator = stores.ContractValidator;
   const contractOperator: ContractOperator = stores.ContractOperator;
   const applicationStore: ApplicationStore = stores.Application;
-  const [actionButtonText, setActionButtonText] = useState('Run validator');
+  const [actionButtonText, setActionButtonText] = useState(translations.VALIDATOR.CONFIRMATION.RUN_VALIDATOR);
   const [txHash, setTxHash] = useState('');
   const { redirectUrl, history } = useUserFlow();
 
@@ -31,17 +31,18 @@ const ImportValidatorConfirmation = () => {
 
   const handlePendingTransaction = (transactionHash: string) => {
     setTxHash(transactionHash);
+    setActionButtonText(translations.VALIDATOR.CONFIRMATION.WAITING_FOR_CONFIRMATION);
     applicationStore.showTransactionPandingPopUp(true);
   };
 
   const onRegisterValidatorClick = async () => {
-      setActionButtonText('Waiting for confirmation...');
+      setActionButtonText(translations.VALIDATOR.CONFIRMATION.WAITING_FOR_TRANSACTION);
       return contractValidator.addNewValidator(false, handlePendingTransaction).then(() => {
         applicationStore.showTransactionPandingPopUp(false);
         history.push(config.routes.VALIDATOR.SUCCESS_PAGE);
       }).catch(() => {
         applicationStore.showTransactionPandingPopUp(false);
-        setActionButtonText('Run validator');
+        setActionButtonText(translations.VALIDATOR.CONFIRMATION.RUN_VALIDATOR);
       });
   };
 
