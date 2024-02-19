@@ -177,14 +177,16 @@ class ValidatorStore extends BaseStore {
         }
         const receipt = await tx.wait();
         if (receipt.blockHash) {
+
           ApiParams.initStorage(true);
           await executeAfterEvent(async () =>  !!await ContractEventGetter.getInstance().getEventByTxHash(receipt.transactionHash), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
         }
       } catch (e: any) {
-        store.dispatch(setIsLoading(false));
         notificationsStore.showMessage(e.message, 'error');
-        store.dispatch(setIsShowTxPendingPopup(false));
         resolve(false);
+      } finally {
+        store.dispatch(setIsLoading(false));
+        store.dispatch(setIsShowTxPendingPopup(false));
       }
     });
   }
@@ -207,34 +209,31 @@ class ValidatorStore extends BaseStore {
       }
       const myAccountStore: MyAccountStore = this.getStore('MyAccount');
       const validatorBefore = await Validator.getInstance().getValidator(`0x${payload.get(KEYSTORE_PUBLIC_KEY)}`);
-
-      const response = await contract.methods.updateValidator(...payload.values()).send({ from: walletStore.accountAddress })
-        .on('receipt', async (receipt: any) => {
-          // eslint-disable-next-line no-prototype-builtins
-          const event: boolean = receipt.hasOwnProperty('events');
-          if (event) {
-            this.keyStoreFile = null;
-            this.newValidatorReceipt = payload.get(OPERATOR_IDS);
-            console.debug('Contract Receipt', receipt);
-            await executeAfterEvent(async () => await myAccountStore.checkEntityChangedInAccount(
-                async () => {
-                  return Validator.getInstance().getValidator(`0x${payload.get(KEYSTORE_PUBLIC_KEY)}`);
-                },
-                validatorBefore,
-              ), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
-          }
-        })
-        .on('transactionHash', (txHash: string) => {
-          store.dispatch(setTxHash(txHash));
+      try {
+        const tx = await contract.updateValidator(...payload.values()).send({ from: walletStore.accountAddress });
+        if (tx.hash) {
+          store.dispatch(setTxHash(tx.hash));
           store.dispatch(setIsShowTxPendingPopup(true));
-        })
-        .on('error', (error: any) => {
-          console.debug('Contract Error', error.message);
-          store.dispatch(setIsLoading(false));
-          store.dispatch(setIsShowTxPendingPopup(false));
-          resolve(false);
-        });
-      console.log(response);
+        }
+        const receipt = await tx.wait();
+        const event: boolean = receipt.hasOwnProperty('events');
+        if (event) {
+          this.keyStoreFile = null;
+          this.newValidatorReceipt = payload.get(OPERATOR_IDS);
+          console.debug('Contract Receipt', receipt);
+          await executeAfterEvent(async () => await myAccountStore.checkEntityChangedInAccount(
+            async () => {
+              return Validator.getInstance().getValidator(`0x${payload.get(KEYSTORE_PUBLIC_KEY)}`);
+            },
+            validatorBefore,
+          ), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
+        }
+      } catch (e) {
+        resolve(false);
+      } finally {
+        store.dispatch(setIsLoading(false));
+        store.dispatch(setIsShowTxPendingPopup(false));
+      }
     });
   }
 
@@ -268,6 +267,7 @@ class ValidatorStore extends BaseStore {
               label: 'success',
             });
             console.debug('Contract Receipt', receipt);
+
             await executeAfterEvent(async () =>  !!await ContractEventGetter.getInstance().getEventByTxHash(receipt.transactionHash), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
             resolve(true);
           }
@@ -281,19 +281,17 @@ class ValidatorStore extends BaseStore {
           action: 'register_tx',
           label: isRejected ? 'rejected' : 'error',
         });
-        console.debug('Contract Error', e.message);
-        store.dispatch(setIsLoading(false));
         notificationsStore.showMessage(e.message, 'error');
         resolve(false);
+      } finally {
+        store.dispatch(setIsLoading(false));
+        store.dispatch(setIsShowTxPendingPopup(false));
       }
     });
   }
 
   async addNewValidator() {
     const notificationsStore: NotificationsStore = this.getStore('Notifications');
-    // const clusterStore: ClusterStore = this.getStore('Cluster');
-    // const processStore: ProcessStore = this.getStore('Process');
-
     return new Promise(async (resolve) => {
       try {
         const payload: Map<string, any> | false = this.registrationMode === 0 ? await this.createKeySharePayload() : await this.createKeystorePayload();
@@ -345,8 +343,6 @@ class ValidatorStore extends BaseStore {
               action: 'register_tx',
               label: 'success',
             });
-            console.debug('Contract Receipt', receipt);
-
             await executeAfterEvent(async () =>  !!await ContractEventGetter.getInstance().getEventByTxHash(receipt.transactionHash), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
             resolve(true);
           }
@@ -358,10 +354,11 @@ class ValidatorStore extends BaseStore {
           action: 'register_tx',
           label: isRejected ? 'rejected' : 'error',
         });
-        console.debug('Contract Error', e.message);
-        store.dispatch(setIsLoading(false));
         notificationsStore.showMessage(e.message, 'error');
         resolve(false);
+      } finally {
+        store.dispatch(setIsLoading(false));
+        store.dispatch(setIsShowTxPendingPopup(false));
       }
     });
   }
@@ -394,9 +391,8 @@ class ValidatorStore extends BaseStore {
               category: 'single_cluster',
               action: 'reactivate_cluster',
             });
-            console.debug('Contract Receipt', receipt);
-            resolve(true);
             await executeAfterEvent(async () =>  !!await ContractEventGetter.getInstance().getEventByTxHash(receipt.transactionHash), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
+            resolve(true);
           }
         }
       } catch (e: any) {
@@ -406,10 +402,11 @@ class ValidatorStore extends BaseStore {
           action: 'reactivate_cluster',
           label: isRejected ? 'rejected' : 'error',
         });
-        console.debug('Contract Error', e.message);
         notificationsStore.showMessage(e.message, 'error');
-        store.dispatch(setIsLoading(false));
         resolve(false);
+      } finally {
+        store.dispatch(setIsLoading(false));
+        store.dispatch(setIsShowTxPendingPopup(false));
       }
     });
   }
