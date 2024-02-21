@@ -2,7 +2,6 @@ import Decimal from 'decimal.js';
 import { Contract } from 'ethers';
 import { action, computed, makeObservable, observable } from 'mobx';
 import config from '~app/common/config';
-import Operator from '~lib/api/Operator';
 import ApiParams from '~lib/api/ApiParams';
 import BaseStore from '~app/common/stores/BaseStore';
 import { isMainnet, NETWORKS } from '~lib/utils/envHelper';
@@ -17,32 +16,14 @@ import NotificationsStore from '~app/common/stores/applications/SsvWeb/Notificat
 import { equalsAddresses } from '~lib/utils/strings';
 import { store } from '~app/store';
 import { setIsLoading, setIsShowTxPendingPopup, setTxHash } from '~app/redux/appState.slice';
+import { IOperator } from '~app/model/operator.model';
+import { getOperator } from '~root/services/operator.service';
 
 export interface NewOperator {
   id: number,
   fee: number,
   publicKey: string,
   address: string,
-}
-
-export interface IOperator {
-  id: number,
-  fee?: string,
-  name: string,
-  logo?: string,
-  type?: string,
-  address: string,
-  score?: number,
-  public_key: string,
-  selected?: boolean,
-  dappNode?: boolean,
-  ownerAddress: string,
-  dkg_address?: string,
-  mev_relays?: string,
-  autoSelected?: boolean
-  validators_count: number,
-  address_whitelist: string
-  verified_operator?: boolean,
 }
 
 export interface Operators {
@@ -333,7 +314,7 @@ class OperatorStore extends BaseStore {
           const event: boolean = receipt.hasOwnProperty('events');
           if (event) {
             await executeAfterEvent(async () => {
-              const operator = await Operator.getInstance().getOperator(operatorId);
+              const operator = await getOperator(operatorId);
               return equalsAddresses(operator.address_whitelist.toString(), address.toString());
             }, async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
             store.dispatch(setIsLoading(false));
@@ -548,7 +529,7 @@ class OperatorStore extends BaseStore {
             new Decimal(newFee).dividedBy(config.GLOBAL_VARIABLE.BLOCKS_PER_YEAR).toFixed().toString(),
           ),
         );
-        const { id, fee } = await Operator.getInstance().getOperator(operatorId);
+        const { id, fee } = await getOperator(operatorId);
         const operatorBefore = { id, fee };
         const tx = await contractInstance.reduceOperatorFee(operatorId, formattedFee);
         if (tx.hash) {
@@ -561,7 +542,7 @@ class OperatorStore extends BaseStore {
           if (event) {
             await executeAfterEvent(async () => await myAccountStore.checkEntityChangedInAccount(
               async () => {
-                const operatorAfter = await Operator.getInstance().getOperator(operatorId);
+                const operatorAfter = await getOperator(operatorId);
                 return {
                   id: operatorAfter.id,
                   fee: operatorAfter.fee,
@@ -590,7 +571,7 @@ class OperatorStore extends BaseStore {
     return new Promise(async (resolve) => {
       try {
         const myAccountStore: MyAccountStore = this.getStore('MyAccount');
-        let operatorBefore = await Operator.getInstance().getOperator(operatorId);
+        let operatorBefore = await getOperator(operatorId);
         operatorBefore = {
           id: operatorBefore.id,
           declared_fee: operatorBefore.declared_fee,
@@ -609,7 +590,7 @@ class OperatorStore extends BaseStore {
 
             await executeAfterEvent(async () => await myAccountStore.checkEntityChangedInAccount(
                 async () => {
-                  const operatorAfter = await Operator.getInstance().getOperator(operatorId);
+                  const operatorAfter = await getOperator(operatorId);
                   return {
                     id: operatorAfter.id,
                     declared_fee: operatorAfter.declared_fee,
@@ -651,7 +632,6 @@ class OperatorStore extends BaseStore {
           if (event) {
             ApiParams.initStorage(true);
             await executeAfterEvent(async () => {
-              console.log(await ContractEventGetter.getInstance().getEventByTxHash(receipt.transactionHash));
               return await ContractEventGetter.getInstance().getEventByTxHash(receipt.transactionHash);
             }, async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
           }

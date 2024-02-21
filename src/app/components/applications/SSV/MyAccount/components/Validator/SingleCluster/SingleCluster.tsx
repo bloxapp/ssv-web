@@ -5,7 +5,6 @@ import Grid from '@mui/material/Grid';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import config from '~app/common/config';
-import Validator from '~lib/api/Validator';
 import { useStores } from '~app/hooks/useStores';
 import { isMainnet } from '~lib/utils/envHelper';
 import Status from '~app/components/common/Status';
@@ -14,7 +13,6 @@ import { longStringShorten } from '~lib/utils/strings';
 import ImageDiv from '~app/components/common/ImageDiv';
 import PrimaryButton from '~app/components/common/Button/PrimaryButton';
 import WalletStore from '~app/common/stores/applications/SsvWeb/Wallet.store';
-import ClusterStore from '~app/common/stores/applications/SsvWeb/Cluster.store';
 import OperatorStore from '~app/common/stores/applications/SsvWeb/Operator.store';
 import useValidatorRegistrationFlow from '~app/hooks/useValidatorRegistrationFlow';
 import Balance from '~app/components/applications/SSV/MyAccount/components/Balance';
@@ -30,6 +28,8 @@ import OperatorBox
   from '~app/components/applications/SSV/MyAccount/components/Validator/SingleCluster/components/OperatorBox';
 import ActionsButton
   from '~app/components/applications/SSV/MyAccount/components/Validator/SingleCluster/components/actions/ActionsButton';
+import { getClusterHash } from '~root/services/cluster.service';
+import { validatorsByClusterHash } from '~root/services/validator.service';
 
 const ButtonTextWrapper = styled.div`
     display: flex;
@@ -66,7 +66,6 @@ const SingleCluster = () => {
   const navigate = useNavigate();
   const walletStore: WalletStore = stores.Wallet;
   const processStore: ProcessStore = stores.Process;
-  const clusterStore: ClusterStore = stores.Cluster;
   const operatorStore: OperatorStore = stores.Operator;
   const notificationsStore: NotificationsStore = stores.Notifications;
   const process: SingleClusterProcess = processStore.getProcess;
@@ -88,7 +87,7 @@ const SingleCluster = () => {
   useEffect(() => {
     if (!cluster) return navigate(config.routes.SSV.MY_ACCOUNT.CLUSTER_DASHBOARD);
     setLoadingValidators(true);
-    Validator.getInstance().validatorsByClusterHash(1, walletStore.accountAddress, clusterStore.getClusterHash(cluster.operators)).then((response: any) => {
+    validatorsByClusterHash(1, getClusterHash(cluster.operators, walletStore.accountAddress), clusterValidatorsPagination.rowsPerPage).then((response: any) => {
       setClusterValidators(response.validators);
       setClusterValidatorsPagination(response.pagination);
       setLoadingValidators(false);
@@ -141,7 +140,7 @@ const SingleCluster = () => {
 
   const onChangePage = _.debounce(async (newPage: number) => {
     setLoadingValidators(true);
-    Validator.getInstance().validatorsByClusterHash(newPage, walletStore.accountAddress, clusterStore.getClusterHash(cluster.operators)).then((response: any) => {
+    validatorsByClusterHash(newPage, getClusterHash(cluster.operators, walletStore.accountAddress), clusterValidatorsPagination.rowsPerPage).then((response: any) => {
       setClusterValidators(response.validators);
       setClusterValidatorsPagination(response.pagination);
       setLoadingValidators(false);
