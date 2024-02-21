@@ -33,6 +33,7 @@ export enum EValidatorFlowAction {
   OFFLINE_DKG,
   FIRST_REGISTER,
   SECOND_REGISTER,
+  ERROR,
 }
 
 const MAX_VALIDATORS_PER_CLUSTER_SIZE: Record<number, number> = {

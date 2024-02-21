@@ -27,7 +27,7 @@ import NewWhiteWrapper from '~app/components/common/NewWhiteWrapper';
 import PrimaryButton from '~app/components/common/Button/PrimaryButton';
 import GoogleTagManager from '~lib/analytics/GoogleTag/GoogleTagManager';
 import ValidatorStore from '~app/common/stores/applications/SsvWeb/Validator.store';
-import { AccountStore, ClusterStore, WalletStore } from '~app/common/stores/applications/SsvWeb';
+import { AccountStore, ClusterStore, NotificationsStore, WalletStore } from '~app/common/stores/applications/SsvWeb';
 import OperatorStore, { IOperator } from '~app/common/stores/applications/SsvWeb/Operator.store';
 import {
   useStyles,
@@ -57,6 +57,7 @@ const KeyShareFlow = () => {
     const clusterStore: ClusterStore = stores.Cluster;
     const operatorStore: OperatorStore = stores.Operator;
     const validatorStore: ValidatorStore = stores.Validator;
+    const notificationsStore: NotificationsStore = stores.Notifications;
     const [warningMessage, setWarningMessage] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState('');
     const [validatorsList, setValidatorsList] = useState<Record<string, ValidatorType>>({});
@@ -135,7 +136,10 @@ const KeyShareFlow = () => {
         const validators: Record<string, ValidatorType> = createValidatorsRecord(keyShareMulti);
         await accountStore.getOwnerNonce(walletStore.accountAddress);
         const { ownerNonce } = accountStore;
-
+        if (ownerNonce === undefined) {
+          notificationsStore.showMessage('Pending nonce calculation. Please try again later.', 'error');
+          throw Error('Nonce calculation failed.');
+        }
         const promises = Object.values(validators).map((validator: ValidatorType) => new Promise(async (resolve, reject) => {
           try {
             const res = await Validator.getInstance().getValidator(validator.publicKey, true);

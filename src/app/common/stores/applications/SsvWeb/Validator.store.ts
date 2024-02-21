@@ -513,8 +513,13 @@ class ValidatorStore extends BaseStore {
     const accountStore: AccountStore = this.getStore('Account');
     const processStore: ProcessStore = this.getStore('Process');
     const operatorStore: OperatorStore = this.getStore('Operator');
+    const notificationsStore: NotificationsStore = this.getStore('Notifications');
     const process: RegisterValidator | SingleCluster = <RegisterValidator | SingleCluster>processStore.process;
     const { ownerNonce } = accountStore;
+    if (ownerNonce === undefined) {
+      notificationsStore.showMessage('Pending nonce calculation. Please try again later.', 'error');
+      throw Error('Failed to calculate nonce');
+    }
     const operators = Object.values(operatorStore.selectedOperators)
       .sort((a: any, b: any) => a.id - b.id)
       .map(item => ({ id: item.id, operatorKey: item.public_key }));

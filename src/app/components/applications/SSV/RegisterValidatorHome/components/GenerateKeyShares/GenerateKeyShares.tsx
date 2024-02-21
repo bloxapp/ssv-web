@@ -16,7 +16,9 @@ import useValidatorRegistrationFlow, { EValidatorFlowAction } from '~app/hooks/u
 import {
   useStyles,
 } from '~app/components/applications/SSV/RegisterValidatorHome/components/GenerateKeyShares/GenerateKeyShares.styles';
-import { translations } from '~app/common/config';
+import config, { translations } from '~app/common/config';
+import NotificationsStore from '~app/common/stores/applications/Distribution/Notifications.store';
+import routes from '~app/Routes';
 
 type ButtonData = {
   isShow: boolean
@@ -42,6 +44,7 @@ const GenerateKeyShares = () => {
     const accountStore: AccountStore = stores.Account;
     const processStore: ProcessStore = stores.Process;
     const validatorStore: ValidatorStore = stores.Validator;
+    const notificationsStore: NotificationsStore = stores.Notifications;
     const classes = useStyles({ networkId });
     const { getNextNavigation } = useValidatorRegistrationFlow(window.location.pathname);
 
@@ -59,6 +62,12 @@ const GenerateKeyShares = () => {
           children: translations.VALIDATOR.GENERATE_KEY_SHARES.ONLINE,
           submitFunction: () => {
             validatorStore.keyStoreFile = null;
+            // notificationsStore.showMessage('Pending nonce calculation. Please try again later.', 'error');
+            const { ownerNonce, nonceCalculationFinished } = accountStore;
+            if (!nonceCalculationFinished || (nonceCalculationFinished && ownerNonce === undefined)) {
+              notificationsStore.showMessage('Pending nonce calculation. Please try again later.', 'error');
+              nextPage(EValidatorFlowAction.ERROR);
+            }
             nextPage(EValidatorFlowAction.GENERATE_KEY_SHARES_ONLINE);
           },
         },
@@ -74,6 +83,11 @@ const GenerateKeyShares = () => {
           children: translations.VALIDATOR.GENERATE_KEY_SHARES.OFFLINE,
           submitFunction: () => {
             validatorStore.keyShareFile = null;
+            const { ownerNonce, nonceCalculationFinished } = accountStore;
+            if (!nonceCalculationFinished || (nonceCalculationFinished && ownerNonce === undefined)) {
+              notificationsStore.showMessage('Pending nonce calculation. Please try again later.', 'error');
+              nextPage(EValidatorFlowAction.ERROR);
+            }
             nextPage(EValidatorFlowAction.GENERATE_KEY_SHARES_OFFLINE);
           },
         },
@@ -90,6 +104,11 @@ const GenerateKeyShares = () => {
           children: translations.VALIDATOR.GENERATE_KEY_SHARES.ALREADY_HAVE_KEY_SHARES,
           submitFunction: () => {
             validatorStore.keyStoreFile = null;
+            const { ownerNonce, nonceCalculationFinished } = accountStore;
+            if (!nonceCalculationFinished || (nonceCalculationFinished && ownerNonce === undefined)) {
+              notificationsStore.showMessage('Pending nonce calculation. Please try again later.', 'error');
+              nextPage(EValidatorFlowAction.ERROR);
+            }
             nextPage(EValidatorFlowAction.SECOND_REGISTER);
           },
         },
@@ -105,6 +124,9 @@ const GenerateKeyShares = () => {
     }, []);
 
     const nextPage = (mode: EValidatorFlowAction) => {
+      if (mode === EValidatorFlowAction.ERROR){
+        navigate(config.routes.SSV.ROOT);
+      }
       navigate(getNextNavigation(mode));
     };
 

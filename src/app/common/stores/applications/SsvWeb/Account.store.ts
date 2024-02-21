@@ -9,7 +9,8 @@ import notifyService from '~root/services/notify.service';
 
 class AccountStore extends BaseStore  {
   recipientAddress: string = '';
-  ownerNonce: number = 0;
+  ownerNonce: number | undefined = undefined;
+  nonceCalculationFinished: boolean = true;
 
   constructor() {
     super();
@@ -56,11 +57,13 @@ class AccountStore extends BaseStore  {
   }
 
   async getOwnerNonce(ownerAddress: string) {
+    this.nonceCalculationFinished = false;
     const result: any = await new Promise(resolve => {
       const res = Account.getInstance().getAccountData(ownerAddress);
       resolve(res);
     });
     if (result?.data) {
+      this.nonceCalculationFinished = true;
       this.ownerNonce = Number(result.data.nonce);
     }
   }

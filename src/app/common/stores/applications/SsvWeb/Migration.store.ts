@@ -6,6 +6,7 @@ import BaseStore from '~app/common/stores/BaseStore';
 import WalletStore from '~app/common/stores/Abstracts/Wallet';
 import AccountStore from '~app/common/stores/applications/SsvWeb/Account.store';
 import OperatorStore, { IOperator } from '~app/common/stores/applications/SsvWeb/Operator.store';
+import { NotificationsStore } from '~app/common/stores/applications/SsvWeb/index';
 
 class MigrationStore extends BaseStore  {
     migrationFile: File | null = null;
@@ -57,8 +58,13 @@ class MigrationStore extends BaseStore  {
         const accountStore: AccountStore = this.getStore('Account');
         const operatorStore: OperatorStore = this.getStore('Operator');
         const walletStore: WalletStore = this.getStore('Wallet');
+      const notificationsStore: NotificationsStore = this.getStore('Notifications');
         await accountStore.getOwnerNonce(walletStore.accountAddress);
         const { ownerNonce } = accountStore;
+        if (ownerNonce === undefined) {
+          notificationsStore.showMessage('Pending nonce calculation. Please try again later.', 'error');
+          throw Error('Failed to calculate nonce');
+        }
         const { OK_RESPONSE,
             OPERATOR_NOT_EXIST_RESPONSE,
             CATCH_ERROR_RESPONSE,

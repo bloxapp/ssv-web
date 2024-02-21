@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { HttpStatusCode } from 'axios';
 import { Retryable } from 'typescript-retry-decorator';
 import config from '~app/common/config';
 import { web3 } from 'ssv-keys/dist/tsc/src/lib/helpers/web3.helper';
@@ -21,7 +21,7 @@ class Account {
 
     async getAccountData(publicKey: string) {
         try {
-            const url = `${getStoredNetwork().api}/accounts/${web3.utils.toChecksumAddress(publicKey)}`;
+            const url = `http://localhost:3001/api/v4/holesky/accounts/${web3.utils.toChecksumAddress(publicKey)}`;
             return await this.getData(url, false);
         } catch (e) {
             return null;
@@ -33,10 +33,13 @@ class Account {
         try {
             return (await axios.get(url)).data;
         } catch (e) {
-            if (skipRetry) {
-                return null;
-            }
-            throw e;
+          if (axios.isAxiosError(e) && (e?.response?.status === 400 || e?.response?.status === 500)) {
+            skipRetry = true;
+          }
+          if (skipRetry) {
+              return null;
+          }
+          throw e;
         }
     }
 }
