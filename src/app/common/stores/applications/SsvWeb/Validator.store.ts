@@ -343,7 +343,7 @@ class ValidatorStore extends BaseStore {
           resolve(false);
           return;
         }
-        let tx = await contract.bulkRegisterValidator(...payload.values(), { gasLimit: 444800 * 1000, gasPrice: 444800 * 100 });
+        let tx = await contract.bulkRegisterValidator(...payload.values());
 
         if (tx.hash) {
           store.dispatch(setTxHash(tx.hash));
