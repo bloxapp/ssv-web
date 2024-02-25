@@ -15,7 +15,7 @@ import {
 import { ENV } from '~lib/utils/envHelper';
 import { BulkValidatorData, IValidator } from '~app/model/validator.model';
 import { getClusterHash } from '~root/services/cluster.service';
-import { validatorsByClusterHash } from '~root/services/validator.service';
+import { validatorsByClusterHash } from '~root/services/validator/validator.service';
 
 const TableWrapper = styled.div`
     margin-top: 12px;

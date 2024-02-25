@@ -22,7 +22,7 @@ import { store } from '~app/store';
 import { setIsLoading, setIsShowTxPendingPopup, setTxHash } from '~app/redux/appState.slice';
 import { IOperator } from '~app/model/operator.model';
 import { getClusterData, getClusterHash, getSortedOperatorsIds } from '~root/services/cluster.service';
-import { getValidator } from '~root/services/validator.service';
+import { getValidator } from '~root/services/validator/validator.service';
 import { getEventByTxHash } from '~root/services/contractEvent.service';
 
 type ClusterDataType = {
@@ -430,7 +430,7 @@ class ValidatorStore extends BaseStore {
               action: 'register_tx',
               label: 'success',
             });
-            await executeAfterEvent(async () =>  !!await getEventByTxHash(receipt.transactionHash), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
+            await executeAfterEvent(async () => !!await getEventByTxHash(receipt.transactionHash), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
           }
         }
         resolve(false);
@@ -529,14 +529,14 @@ class ValidatorStore extends BaseStore {
           totalCost = prepareSsvAmountToTransfer(toWei(liquidationCollateralCost.add(networkCost).add(operatorsCost).toString()));
         }
         const keysharePayload = await (new KeySharesItem()).buildPayload({
-            publicKey: threshold.publicKey,
-            operators,
-            encryptedShares,
-          }, {
-            ownerAddress: accountAddress,
-            ownerNonce: ownerNonce,
-            privateKey: this.keyStorePrivateKey,
-          });
+          publicKey: threshold.publicKey,
+          operators,
+          encryptedShares,
+        }, {
+          ownerAddress: accountAddress,
+          ownerNonce: ownerNonce,
+          privateKey: this.keyStorePrivateKey,
+        });
 
         const payload = this.createPayload(this.keyStorePublicKey,
           keysharePayload.operatorIds,

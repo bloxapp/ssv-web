@@ -3,7 +3,7 @@ import config from '~app/common/config';
 import BaseStore from '~app/common/stores/BaseStore';
 import WalletStore from '~app/common/stores/Abstracts/Wallet';
 import { formatNumberFromBeaconcha, formatNumberToUi } from '~lib/utils/numbers';
-import { getValidator as getValidatorServiceCall, clustersByOwnerAddress } from '~root/services/validator.service';
+import { getValidator as getValidatorServiceCall, clustersByOwnerAddress } from '~root/services/validator/validator.service';
 import { getOperatorsByOwnerAddress } from '~root/services/operator.service';
 import { extendClusterEntity } from '~root/services/cluster.service';
 import { SsvStore } from '~app/common/stores/applications/SsvWeb/index';

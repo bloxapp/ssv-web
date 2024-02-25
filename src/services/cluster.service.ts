@@ -5,7 +5,7 @@ import config from '~app/common/config';
 import { EContractName } from '~app/model/contracts.model';
 import { getContractByName } from '~root/services/contracts.service';
 import { encodePacked, fromWei, getFeeForYear } from '~root/services/conversions.service';
-import { getClusterData as getClusterDataValidatorService } from '~root/services/validator.service';
+import { getClusterData as getClusterDataValidatorService } from '~root/services/validator/validator.service';
 import { IOperator } from '~app/model/operator.model';
 
 const getSortedOperatorsIds = (operators: (number | IOperator)[]) => {

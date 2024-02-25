@@ -17,7 +17,7 @@ import TermsAndConditionsCheckbox from '~app/components/common/TermsAndCondition
 import { fromWei, toWei } from '~root/services/conversions.service';
 import { extendClusterEntity, getClusterHash, getClusterRunWay } from '~root/services/cluster.service';
 import { WalletStore } from '~app/common/stores/applications/SsvWeb';
-import { clusterByHash } from '~root/services/validator.service';
+import { clusterByHash } from '~root/services/validator/validator.service';
 
 const ValidatorFlow = () => {
   const stores = useStores();
