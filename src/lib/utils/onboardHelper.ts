@@ -7,6 +7,7 @@ import { Theme } from '@web3-onboard/core';
 import { clearLocalStorage, getFromLocalStorageByKey, saveInLocalStorage } from '~root/providers/localStorage.provider';
 import { GOERLI_RPC_URL, HOLESKY_RPC_URL, MAINNET_RPC_URL } from '~app/common/config/config';
 import { MAINNET_NETWORK_ID, GOERLI_NETWORK_ID, HOLESKY_NETWORK_ID } from '~root/providers/networkInfo.provider';
+import { NotificationPosition } from '@web3-onboard/core/dist/types';
 
 const TOKEN_NAMES = {
   [`${MAINNET_NETWORK_ID}`]: 'ETH',
@@ -55,7 +56,9 @@ const initOnboardOptions = {
     removeWhereIsMyWalletWarning: true,
   },
   notify: {
-    enabled: false,
+    enabled: true,
+    transactionHandler: undefined,
+    position: 'topRight' as NotificationPosition,
   },
   accountCenter: {
     mobile: {
