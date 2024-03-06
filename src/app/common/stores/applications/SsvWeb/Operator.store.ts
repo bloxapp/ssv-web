@@ -1,7 +1,7 @@
 import Decimal from 'decimal.js';
 import { Contract } from 'ethers';
 import { action, computed, makeObservable, observable } from 'mobx';
-import config from '~app/common/config';
+import config, { translations } from '~app/common/config';
 import BaseStore from '~app/common/stores/BaseStore';
 import { EContractName } from '~app/model/contracts.model';
 import { executeAfterEvent } from '~root/services/events.service';
@@ -16,6 +16,8 @@ import { setIsLoading, setIsShowTxPendingPopup, setTxHash } from '~app/redux/app
 import { IOperator } from '~app/model/operator.model';
 import { getOperator } from '~root/services/operator.service';
 import { getEventByTxHash } from '~root/services/contractEvent.service';
+import WalletStore from '~app/common/stores/applications/SsvWeb/Wallet.store';
+import { checkEntityChangedInAccount, delay } from '~root/services/utils.service';
 
 export interface NewOperator {
   id: number,
@@ -139,17 +141,16 @@ class OperatorStore extends BaseStore {
       myAccountStore.getOwnerAddressOperators({}),
     ])
       .then(() => {
-        store.dispatch(setIsLoading(false));
-        store.dispatch(setIsShowTxPendingPopup(false));
         resolve(true);
       })
       .catch((error) => {
-        store.dispatch(setIsLoading(false));
         if (showError) {
-          notificationsStore.showMessage(error.message, 'error');
+          notificationsStore.showMessage(error.message || translations.DEFAULT.DEFAULT_ERROR_MESSAGE, 'error');
         }
-        store.dispatch(setIsShowTxPendingPopup(false));
         resolve(false);
+      }).finally(() => {
+        store.dispatch(setIsLoading(false));
+        store.dispatch(setIsShowTxPendingPopup(false));
       });
   }
 
@@ -294,9 +295,8 @@ class OperatorStore extends BaseStore {
    * update operator address whitelist
    */
   async updateOperatorAddressWhitelist(operatorId: string, address: string) {
-    const myAccountStore: MyAccountStore = this.getStore('MyAccount');
     const notificationsStore: NotificationsStore = this.getStore('Notifications');
-
+    const walletStore: WalletStore = this.getStore('Wallet');
     return new Promise(async (resolve) => {
       try {
         const contractInstance = getContractByName(EContractName.SETTER);
@@ -305,6 +305,9 @@ class OperatorStore extends BaseStore {
           store.dispatch(setTxHash(tx.hash));
           store.dispatch(setIsShowTxPendingPopup(true));
         }
+        if (walletStore.isContractWallet) {
+          resolve(true);
+        }
         const receipt = await tx.wait();
         if (receipt.blockHash) {
           const event: boolean = receipt.hasOwnProperty('events');
@@ -312,11 +315,13 @@ class OperatorStore extends BaseStore {
             await executeAfterEvent(async () => {
               const operator = await getOperator(operatorId);
               return equalsAddresses(operator.address_whitelist.toString(), address.toString());
-            }, async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
+            }, async () => this.refreshOperatorsAndClusters(resolve, true), delay);
             store.dispatch(setIsLoading(false));
             store.dispatch(setIsShowTxPendingPopup(false));
             resolve(true);
           }
+        } else {
+          resolve(false);
         }
       } catch (e: any) {
         console.debug('Contract Error', e.message);
@@ -345,8 +350,8 @@ class OperatorStore extends BaseStore {
    * Cancel change fee process for operator
    */
   async cancelChangeFeeProcess(operatorId: number): Promise<any> {
-    const myAccountStore: MyAccountStore = this.getStore('MyAccount');
     const notificationsStore: NotificationsStore = this.getStore('Notifications');
+    const walletStore: WalletStore = this.getStore('Wallet');
     await this.syncOperatorFeeInfo(operatorId);
     const operatorDataBefore = {
       operatorFutureFee: this.operatorFutureFee,
@@ -361,12 +366,15 @@ class OperatorStore extends BaseStore {
           store.dispatch(setTxHash(tx.hash));
           store.dispatch(setIsShowTxPendingPopup(true));
         }
+        if (walletStore.isContractWallet) {
+          resolve(true);
+        }
         const receipt = await tx.wait();
         if (receipt.blockHash) {
           const event: boolean = receipt.hasOwnProperty('events');
           if (event) {
             console.debug('Contract Receipt', receipt);
-            await executeAfterEvent(async () => await myAccountStore.checkEntityChangedInAccount(
+            await executeAfterEvent(async () => await checkEntityChangedInAccount(
               async () => {
                 await this.syncOperatorFeeInfo(operatorId);
                 return {
@@ -376,8 +384,10 @@ class OperatorStore extends BaseStore {
                 };
               },
               operatorDataBefore,
-            ), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
+            ), async () => this.refreshOperatorsAndClusters(resolve, true), delay);
           }
+        } else {
+          resolve(false);
         }
       } catch (e: any) {
         notificationsStore.showMessage(e.message, 'error');
@@ -449,8 +459,8 @@ class OperatorStore extends BaseStore {
    * @param newFee
    */
   async updateOperatorFee(operatorId: number, newFee: any): Promise<boolean> {
-    const myAccountStore: MyAccountStore = this.getStore('MyAccount');
     const notificationsStore: NotificationsStore = this.getStore('Notifications');
+    const walletStore: WalletStore = this.getStore('Wallet');
     return new Promise(async (resolve) => {
       try {
         const contractInstance = getContractByName(EContractName.SETTER);
@@ -470,12 +480,14 @@ class OperatorStore extends BaseStore {
           store.dispatch(setTxHash(tx.hash));
           store.dispatch(setIsShowTxPendingPopup(true));
         }
+        if (walletStore.isContractWallet) {
+          resolve(true);
+        }
         const receipt = await tx.wait();
         if (receipt.blockHash) {
           const event: boolean = receipt.hasOwnProperty('events');
           if (event) {
-
-            await executeAfterEvent(async () => await myAccountStore.checkEntityChangedInAccount(
+            await executeAfterEvent(async () => await checkEntityChangedInAccount(
               async () => {
                 await this.syncOperatorFeeInfo(operatorId);
                 return {
@@ -485,8 +497,10 @@ class OperatorStore extends BaseStore {
                 };
               },
               operatorDataBefore,
-            ), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
+            ), async () => this.refreshOperatorsAndClusters(resolve, true), delay);
           }
+        } else {
+          resolve(false);
         }
       } catch (e: any) {
         console.debug('Contract Error', e.message);
@@ -500,8 +514,8 @@ class OperatorStore extends BaseStore {
   }
 
   async decreaseOperatorFee(operatorId: number, newFee: any): Promise<boolean> {
-    const myAccountStore: MyAccountStore = this.getStore('MyAccount');
     const notificationsStore: NotificationsStore = this.getStore('Notifications');
+    const walletStore: WalletStore = this.getStore('Wallet');
     return new Promise(async (resolve) => {
       try {
         const contractInstance = getContractByName(EContractName.SETTER);
@@ -517,11 +531,14 @@ class OperatorStore extends BaseStore {
           store.dispatch(setTxHash(tx.hash));
           store.dispatch(setIsShowTxPendingPopup(true));
         }
+        if (walletStore.isContractWallet) {
+          resolve(true);
+        }
         const receipt = await tx.wait();
         if (receipt.blockHash) {
           const event: boolean = receipt.hasOwnProperty('events');
           if (event) {
-            await executeAfterEvent(async () => await myAccountStore.checkEntityChangedInAccount(
+            await executeAfterEvent(async () => await checkEntityChangedInAccount(
               async () => {
                 const operatorAfter = await getOperator(operatorId);
                 return {
@@ -530,8 +547,10 @@ class OperatorStore extends BaseStore {
                 };
               },
               operatorBefore,
-            ), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
+            ), async () => this.refreshOperatorsAndClusters(resolve, true), delay);
           }
+        } else {
+          resolve(false);
         }
       } catch (e: any) {
         notificationsStore.showMessage(e.message, 'error');
@@ -549,9 +568,9 @@ class OperatorStore extends BaseStore {
    */
   async approveOperatorFee(operatorId: number): Promise<boolean> {
     const notificationsStore: NotificationsStore = this.getStore('Notifications');
+    const walletStore: WalletStore = this.getStore('Wallet');
     return new Promise(async (resolve) => {
       try {
-        const myAccountStore: MyAccountStore = this.getStore('MyAccount');
         let operatorBefore = await getOperator(operatorId);
         operatorBefore = {
           id: operatorBefore.id,
@@ -564,12 +583,15 @@ class OperatorStore extends BaseStore {
           store.dispatch(setTxHash(tx.hash));
           store.dispatch(setIsShowTxPendingPopup(true));
         }
+        if (walletStore.isContractWallet) {
+          resolve(true);
+        }
         const receipt = await tx.wait();
         if (receipt.blockHash) {
           const event: boolean = receipt.hasOwnProperty('events');
           if (event) {
 
-            await executeAfterEvent(async () => await myAccountStore.checkEntityChangedInAccount(
+            await executeAfterEvent(async () => await checkEntityChangedInAccount(
                 async () => {
                   const operatorAfter = await getOperator(operatorId);
                   return {
@@ -579,8 +601,10 @@ class OperatorStore extends BaseStore {
                   };
                 },
                 operatorBefore,
-              ), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
+              ), async () => this.refreshOperatorsAndClusters(resolve, true), delay);
           }
+        } else {
+          resolve(false);
         }
       } catch (e: any) {
         notificationsStore.showMessage(e.message, 'error');
@@ -597,8 +621,8 @@ class OperatorStore extends BaseStore {
    * @param operatorId
    */
   async removeOperator(operatorId: number): Promise<any> {
-    const myAccountStore: MyAccountStore = this.getStore('MyAccount');
     const notificationsStore: NotificationsStore = this.getStore('Notifications');
+    const walletStore: WalletStore = this.getStore('Wallet');
     const contractInstance = getContractByName(EContractName.SETTER);
     return new Promise(async (resolve) => {
       try {
@@ -607,14 +631,19 @@ class OperatorStore extends BaseStore {
           store.dispatch(setTxHash(tx.hash));
           store.dispatch(setIsShowTxPendingPopup(true));
         }
+        if (walletStore.isContractWallet) {
+          resolve(true);
+        }
         const receipt = await tx.wait();
         if (receipt.blockHash) {
           const event: boolean = receipt.hasOwnProperty('events');
           if (event) {
             await executeAfterEvent(async () => {
               return await getEventByTxHash(receipt.transactionHash);
-            }, async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
+            }, async () => this.refreshOperatorsAndClusters(resolve, true), delay);
           }
+        } else {
+          resolve(false);
         }
       } catch (e: any) {
         notificationsStore.showMessage(e.message, 'error');
@@ -627,7 +656,7 @@ class OperatorStore extends BaseStore {
   }
 
   async addNewOperator() {
-    const myAccountStore: MyAccountStore = this.getStore('MyAccount');
+    const walletStore: WalletStore = this.getStore('Wallet');
     const notificationsStore: NotificationsStore = this.getStore('Notifications');
     return new Promise(async (resolve, reject) => {
       try {
@@ -644,9 +673,12 @@ class OperatorStore extends BaseStore {
             store.dispatch(setTxHash(tx.hash));
             store.dispatch(setIsShowTxPendingPopup(true));
           }
+          if (walletStore.isContractWallet) {
+            resolve(true);
+          }
           const receipt = await tx.wait();
           if (receipt.blockHash) {
-            await executeAfterEvent(async () =>  !!await getEventByTxHash(receipt.transactionHash), async () => this.refreshOperatorsAndClusters(resolve, true), myAccountStore.delay);
+            await executeAfterEvent(async () =>  !!await getEventByTxHash(receipt.transactionHash), async () => this.refreshOperatorsAndClusters(resolve, true), delay);
             resolve(true);
           }
         } catch (err: any) {

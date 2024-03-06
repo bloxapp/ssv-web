@@ -18,13 +18,13 @@ const getAccountData = async (publicKey: string) => {
 
 const getOwnerNonce = async ({ address }: { address: string }) => {
   const res = await getAccountData(address);
-  if (res) {
-    return Number(res.nonce);
+  if (res.data && (res.data.nonce || res.data.nonce === 0)) {
+    return Number(res.data.nonce);
   }
   return undefined;
 };
 
-const setFeeRecipient = async ({ feeRecipientAddress }: { feeRecipientAddress: string }) => {
+const setFeeRecipient = async ({ feeRecipientAddress, isContractWallet }: { feeRecipientAddress: string, isContractWallet: boolean }) => {
   const contract = getContractByName(EContractName.SETTER);
   try {
     const tx = await contract.setFeeRecipientAddress(feeRecipientAddress);
@@ -32,6 +32,9 @@ const setFeeRecipient = async ({ feeRecipientAddress }: { feeRecipientAddress: s
       notifyService.hash(tx.hash);
       store.dispatch(setTxHash(tx.hash));
       store.dispatch(setIsShowTxPendingPopup(true));
+    }
+    if (isContractWallet) {
+      return true;
     }
     await tx.wait();
   } catch (e: any) {

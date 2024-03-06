@@ -1,21 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import config from '~app/common/config';
 import { useStores } from '~app/hooks/useStores';
 import Status from '~app/components/common/Status';
-import { formatValidatorPublicKey, longStringShorten } from '~lib/utils/strings';
 import Checkbox from '~app/components/common/CheckBox/CheckBox';
+import { getClusterHash } from '~root/services/cluster.service';
+import { validatorsByClusterHash } from '~root/services/validator.service';
+import { BulkValidatorData, IValidator } from '~app/model/validator.model';
+import { formatValidatorPublicKey, longStringShorten } from '~lib/utils/strings';
 import {
   ProcessStore,
   WalletStore,
   SingleCluster as SingleClusterProcess,
   NotificationsStore,
 } from '~app/common/stores/applications/SsvWeb';
-import { BulkValidatorData, IValidator } from '~app/model/validator.model';
-import { getClusterHash } from '~root/services/cluster.service';
-import { validatorsByClusterHash } from '~root/services/validator.service';
 import { getBeaconChainLink } from '~root/providers/networkInfo.provider';
+import { useAppSelector } from '~app/hooks/redux.hook';
+import { getIsDarkMode } from '~app/redux/appState.slice';
 
 const TableWrapper = styled.div`
     margin-top: 12px;
@@ -81,21 +83,23 @@ const LinksWrapper = styled.div`
     gap: 8px;
 `;
 
-const Link = styled.div<{ logo: string }>`
+const Link = styled.div<{ isDarkMode: boolean; logo: string }>`
     width: 24px;
     height: 24px;
     cursor: pointer;
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: ${({ theme, logo }) => `url(${logo}${theme.colors.isDarkTheme ? 'dark.svg' : 'light.svg'})`}
+    background-image: ${({ isDarkMode, logo }) => `url(${logo}${isDarkMode ? 'dark.svg' : 'light.svg'})`}
 }
 `;
 
-const ValidatorsList = ({ onCheckboxClickHandler, selectedValidators, fillSelectedValidators }: {
+const ValidatorsList = ({ onCheckboxClickHandler, selectedValidators, fillSelectedValidators, maxValidatorsCount, checkboxTooltipTitle }: {
   onCheckboxClickHandler?: Function,
   selectedValidators?: Record<string, BulkValidatorData>,
   fillSelectedValidators?: Function
+  maxValidatorsCount?: number
+  checkboxTooltipTitle?: JSX.Element | string
 }) => {
   const stores = useStores();
   const walletStore: WalletStore = stores.Wallet;
@@ -103,7 +107,9 @@ const ValidatorsList = ({ onCheckboxClickHandler, selectedValidators, fillSelect
   const processStore: ProcessStore = stores.Process;
   const process: SingleClusterProcess = processStore.getProcess;
   const cluster = process?.item;
+  const selectValidatorDisableCondition = Object.values(selectedValidators || {}).filter((validator: BulkValidatorData) => validator.isSelected).length === maxValidatorsCount;
   const navigate = useNavigate();
+  const isDarkMode = useAppSelector(getIsDarkMode);
   const [clusterValidators, setClusterValidators] = useState<IValidator[]>([]);
   const [clusterValidatorsPagination, setClusterValidatorsPagination] = useState({
     page: 1,
@@ -179,24 +185,26 @@ const ValidatorsList = ({ onCheckboxClickHandler, selectedValidators, fillSelect
         {clusterValidators?.map((validator: IValidator) => {
             const formattedPublicKey = formatValidatorPublicKey(validator.public_key);
             const res = selectedValidators && selectedValidators[formattedPublicKey]?.isSelected;
+            const showingCheckboxCondition = onCheckboxClickHandler && selectedValidators;
+            const disableButtonCondition = selectValidatorDisableCondition && !res;
             return (
               <ValidatorWrapper>
                 <PublicKeyWrapper>
                   <PublicKey>
-                    {onCheckboxClickHandler && selectedValidators && <Checkbox disable={false} grayBackGround text={''}
+                    {showingCheckboxCondition && <Checkbox disable={disableButtonCondition} grayBackGround text={''}
+                                                                               withTooltip={disableButtonCondition}
+                                                                               tooltipText={checkboxTooltipTitle}
                                                                                withoutMarginBottom
                                                                                onClickCallBack={(isChecked: boolean) => onCheckboxClickHandler(isChecked, formattedPublicKey, clusterValidators)}
                                                                                isChecked={res}/>}
                     {longStringShorten(formattedPublicKey, 4, 4)}
                   </PublicKey>
-                  <Link onClick={() => copyToClipboard(validator.public_key)} logo={'/images/copy/'}/>
+                  <Link onClick={() => copyToClipboard(validator.public_key)} logo={'/images/copy/'} isDarkMode={isDarkMode} />
                 </PublicKeyWrapper>
                 <Status item={validator}/>
                 <LinksWrapper>
-                  <Link onClick={() => openLink(`${config.links.EXPLORER_URL}/validators/${validator.public_key}`)}
-                        logo={'/images/explorer/'}/>
-                  <Link onClick={() => openLink(`${getBeaconChainLink()}/validator/${validator.public_key}`)}
-                        logo={'/images/beacon/'}/>
+                  <Link onClick={() => openLink(`${config.links.EXPLORER_URL}/validators/${validator.public_key}`)} logo={'/images/explorer/'} isDarkMode={isDarkMode} />
+                  <Link onClick={() => openLink(`${getBeaconChainLink()}/validator/${validator.public_key}`)} logo={'/images/beacon/'} isDarkMode={isDarkMode} />
                 </LinksWrapper>
               </ValidatorWrapper>);
           },
