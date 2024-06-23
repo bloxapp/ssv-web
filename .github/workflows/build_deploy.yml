@@ -21,7 +21,7 @@ jobs:
             \"networkId\": 17000,
             \"apiVersion\": \"v4\",
             \"apiNetwork\": \"holesky\",
-            \"api\": \"https://api.stage.ssv.network/api\",
+            \"api\": \"https://api-dev.stage.ssv.network/api\",
             \"explorerUrl\": \"https://holesky-explorer.stage.ssv.network\",
             \"insufficientBalanceUrl\": \"https://faucet.stage.ssv.network\",
             \"googleTagSecret\": \"${{ secrets.STAGE_GOOGLE_TAG_SECRET }}\",
@@ -135,7 +135,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.STAGE_AWS_SECRET_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGE_AWS_SECRET_ACCESS_KEY }}
       # </ilya-app.stage.ssv.network>
-      
+
       # <chris-app.stage.ssv.network>
       - name: Run chris-dev webapp build
         if: github.ref == 'refs/heads/chris-dev'
@@ -165,8 +165,8 @@ jobs:
           AWS_S3_BUCKET: ${{ secrets.STAGE_AWS_S3_BUCKET_CHRIS }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STAGE_AWS_SECRET_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGE_AWS_SECRET_ACCESS_KEY }}
-      # </chris-app.stage.ssv.network>      
-      
+      # </chris-app.stage.ssv.network>
+
       # <dima-app.stage.ssv.network>
       - name: Run dima-dev webapp build
         if: github.ref == 'refs/heads/dima-dev'
@@ -196,8 +196,8 @@ jobs:
           AWS_S3_BUCKET: ${{ secrets.STAGE_AWS_S3_BUCKET_DIMA }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STAGE_AWS_SECRET_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGE_AWS_SECRET_ACCESS_KEY }}
-      # </dima-app.stage.ssv.network>        
-      
+      # </dima-app.stage.ssv.network>
+
       # <sumbat-app.stage.ssv.network>
       - name: Run sumbat-dev webapp build
         if: github.ref == 'refs/heads/sumbat-dev'
@@ -227,7 +227,7 @@ jobs:
           AWS_S3_BUCKET: ${{ secrets.STAGE_AWS_S3_BUCKET_SUMBAT }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STAGE_AWS_SECRET_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGE_AWS_SECRET_ACCESS_KEY }}
-      # </sumbat-app.stage.ssv.network>       
+      # </sumbat-app.stage.ssv.network>
 
 
       # <beta.app.ssv.network>
