@@ -40,7 +40,7 @@ export const WalletButton = () => {
             {(() => {
               if (!connected) {
                 return (
-                  <Button size="lg" width="full" onClick={openConnectModal}>
+                  <Button data-cy="connect-btn" size="lg" width="full" onClick={openConnectModal}>
                     Connect Wallet
                   </Button>
                 );
@@ -58,7 +58,15 @@ export const WalletButton = () => {
 
               return (
                 <div className="flex gap-3">
-                  <Button size="network" variant="secondary" colorScheme="wallet" onClick={openChainModal} className="flex items-center gap-3" type="button">
+                  <Button
+                    data-cy="network-button"
+                    size="network"
+                    variant="secondary"
+                    colorScheme="wallet"
+                    onClick={openChainModal}
+                    className="flex items-center gap-3"
+                    type="button"
+                  >
                     {chain.hasIcon && (
                       <div
                         className="size-6"
@@ -77,7 +85,7 @@ export const WalletButton = () => {
                       <span> {chain.name}</span> <ChevronDown className="size-5" />
                     </div>
                   </Button>
-                  <Button size="wallet" className="gap-3" variant="secondary" colorScheme="wallet" onClick={openAccountModal}>
+                  <Button data-cy="wallet-button" size="wallet" className="gap-3" variant="secondary" colorScheme="wallet" onClick={openAccountModal}>
                     <img className="size-6" src={getWalletIconSrc(connector?.name)} alt={`Connected to ${account.address}`} />
                     {formatAddress(account.address)}
                   </Button>

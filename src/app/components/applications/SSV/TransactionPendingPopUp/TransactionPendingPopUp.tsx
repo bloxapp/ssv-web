@@ -82,7 +82,7 @@ const TransactionPendingPopUp = () => {
   };
 
   return (
-    <DialogWrapper aria-labelledby="simple-dialog-title" open={isShowTxPendingPopup}>
+    <DialogWrapper aria-labelledby="simple-dialog-title" data-cy="transaction-pending-modal" open={isShowTxPendingPopup}>
       <GridWrapper container>
         <HeaderSubHeader
           closeButtonAction={closeButtonAction}

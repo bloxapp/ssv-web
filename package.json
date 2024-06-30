@@ -149,6 +149,7 @@
     "zod": "^3.23.8"
   },
   "scripts": {
+    "synpress:run": "synpress run",
     "prettify": "prettier --write --log-level silent src/**/*.{ts,tsx,js,jsx,json,css,scss,md}",
     "type-check": "tsc --noEmit",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
@@ -195,6 +196,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-inject": "^5.0.5",
+    "@synthetixio/synpress": "^3.7.3",
     "@testing-library/dom": "^7.30.4",
     "@types/bs58check": "^2.1.0",
     "@types/enzyme": "^3.10.8",

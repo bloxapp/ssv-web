@@ -47,6 +47,7 @@ const OperatorStatus = () => {
             </Alert>
           )}
           <Button
+            data-cy="operator-status-switch-btn"
             disabled={isFeeZero && operator.is_private}
             size="xl"
             className="w-full"

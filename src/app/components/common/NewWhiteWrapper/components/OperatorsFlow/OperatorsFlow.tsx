@@ -115,6 +115,7 @@ const OperatorsFlow = (props: Props) => {
         <Grid container item xs style={{ justifyContent: 'flex-end' }}>
           <Grid
             item
+            data-cy="operator-settings-btn"
             className={classes.Options}
             onClick={() => {
               setShowSettings(!showSettings);
@@ -123,15 +124,15 @@ const OperatorsFlow = (props: Props) => {
           {showSettings && (
             <Grid item className={classes.SettingsWrapper}>
               <Grid ref={settingsRef} container item className={classes.Settings}>
-                <Grid container item className={classes.Button} onClick={goToAccessSettings}>
+                <Grid data-cy="operator-permission-settings-option" container item className={classes.Button} onClick={goToAccessSettings}>
                   <Grid className={classes.SettingsImage} />
                   <Typography>{translations.OPERATOR_WHITELIST_ADDRESS.TITLE}</Typography>
                 </Grid>
-                <Grid container item className={classes.Button} onClick={moveToMetaData}>
+                <Grid data-cy="edit-operator-details-settings-option" container item className={classes.Button} onClick={moveToMetaData}>
                   <Grid className={classes.MetadataImage} />
                   <Typography>Edit Details</Typography>
                 </Grid>
-                <Grid container item className={classes.Button} onClick={moveToRemoveOperator}>
+                <Grid data-cy="remove-operator-settings-option" container item className={classes.Button} onClick={moveToRemoveOperator}>
                   <Grid className={classes.RemoveImage} />
                   <Typography>Remove Operator</Typography>
                 </Grid>

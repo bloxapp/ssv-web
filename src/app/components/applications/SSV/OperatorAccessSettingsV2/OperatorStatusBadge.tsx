@@ -13,7 +13,7 @@ type FCProps = FC<Omit<BadgeProps, keyof OperatorStatusBadgeProps> & OperatorSta
 export const OperatorStatusBadge: FCProps = ({ isPrivate, className, ...props }) => {
   const Icon = isPrivate ? MdLockOutline : TbEye;
   return (
-    <Badge variant={isPrivate ? 'success' : 'info'} className={cn(className)} {...props}>
+    <Badge data-cy="operator-status-badge" variant={isPrivate ? 'success' : 'info'} className={cn(className)} {...props}>
       <Icon className="size-[18px]" />
       {isPrivate ? 'Private' : 'Public'}
     </Badge>

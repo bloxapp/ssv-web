@@ -19,7 +19,7 @@ const PermissionSettingsDashboard = () => {
         <PermissionSettingsItem
           className="pt-8"
           title={
-            <h2 className="text-xl flex items-center gap-2">
+            <h2 className="text-xl flex items-center gap-2" data-cy="permission-settings-title">
               <span>Permission Settings</span>
               <Tooltip
                 content={
@@ -42,12 +42,14 @@ const PermissionSettingsDashboard = () => {
           description={'Switch between public and private modes for operator access control.'}
           route={config.routes.SSV.MY_ACCOUNT.OPERATOR.ACCESS_SETTINGS.STATUS}
           addon={<OperatorStatusBadge isPrivate={selectedOperator.is_private} />}
+          data-cy="operator-status-item"
         />
         <PermissionSettingsItem
           title="Authorized Addresses"
           description="Manage owner addresses authorized to register validators to your operator."
           route={config.routes.SSV.MY_ACCOUNT.OPERATOR.ACCESS_SETTINGS.AUTHORIZED_ADDRESSES}
           addon={<ActiveBadge isActive={Boolean(selectedOperator.whitelist_addresses?.length)} />}
+          data-cy="authorized-addresses-item"
         />
         <PermissionSettingsItem
           className="pb-8"
@@ -55,6 +57,7 @@ const PermissionSettingsDashboard = () => {
           description="Manage whitelisted addresses through an external contract."
           addon={<ActiveBadge isActive={hasWhitelistingContract} />}
           route={config.routes.SSV.MY_ACCOUNT.OPERATOR.ACCESS_SETTINGS.EXTERNAL_CONTRACT}
+          data-cy="external-contract-item"
         />
       </Card>
     </BorderScreen>
